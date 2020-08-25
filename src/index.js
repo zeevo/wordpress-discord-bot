@@ -1,11 +1,10 @@
 require('dotenv').config();
+
 const Discord = require('discord.js');
-
 const logger = require('./logger');
+const wp = require('./wp');
 const db = require('./db');
-
-const URL = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi;
-const urlMatcher = new RegExp(URL);
+const { isUrl, lookupMetaInfo, isValidMessage } = require('./utils');
 
 const client = new Discord.Client();
 
@@ -20,11 +19,76 @@ client.on('message', async (msg) => {
   logger.info({ message: msg.content, author: msg.author.id });
 
   const { content } = msg;
-  if (content.match(urlMatcher)) {
+  if (isUrl(content)) {
     await msg.reply("That's a link");
   } else {
     await msg.reply('Ack');
   }
 });
 
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN).then(async () => {
+  setInterval(async () => {
+    logger.info('Collection posts...');
+    const { Post } = await db();
+    client.channels.cache
+      .filter((channel) => {
+        return channel.type === 'text';
+      })
+      .forEach(async (chl) => {
+        const channel = await chl.fetch();
+        const messages = await channel.messages.fetch({ limit: 50 });
+        const content = messages.filter(isValidMessage);
+        content.forEach(async (ct) => {
+          const { author } = ct;
+          const post = await Post.findAll({
+            where: {
+              $or: [
+                {
+                  discordId: {
+                    $eq: ct.id,
+                  },
+                  url: {
+                    $eq: ct.content,
+                  },
+                },
+              ],
+            },
+          });
+          if (!post.length) {
+            logger.info('Found new message');
+            await Post.create({
+              content: ct.content,
+              url: ct.content,
+              authorUserName: `${author.username}#${author.discriminator}`,
+              authorDiscordId: author.id,
+              discordId: ct.id,
+              createdTimestamp: ct.createdTimestamp,
+              channelDiscordId: channel.id,
+              channelName: channel.name,
+            });
+          }
+        });
+      });
+  }, 10000);
+
+  setInterval(async () => {
+    // Send the data from the database to Wordpress
+    logger.info('Processing posts...');
+    const { Post } = await db();
+    const postsToProcess = await Post.findAll({
+      where: {
+        processed: false,
+      },
+    });
+
+    postsToProcess.reduce(async (accum, post) => {
+      await accum;
+      logger.info(`Processing post ${post.discordId}`);
+      await wp.createPost(post);
+      await post.update({
+        processed: true,
+      });
+      return post.save();
+    }, Promise.resolve());
+  }, 10000);
+});

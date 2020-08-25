@@ -1,16 +1,24 @@
 const winston = require('winston');
 
 const logger = winston.createLogger({
-  format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-  levels: winston.config.syslog.levels,
   transports: [
-    //
-    // - Write all logs with level `error` and below to `error.log`
-    // - Write all logs with level `info` and below to `combined.log`
-    //
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
+    new winston.transports.Console({
+      level: process.env.LOG_LEVEL,
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.colorize(),
+        winston.format.simple(),
+      ),
+    }),
+    new winston.transports.File({
+      filename: 'error.log',
+      level: 'error',
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    }),
+    new winston.transports.File({
+      filename: 'combined.log',
+      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    }),
   ],
 });
 

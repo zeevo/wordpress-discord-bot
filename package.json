@@ -19,10 +19,14 @@
   },
   "dependencies": {
     "discord.js": "^12.3.1",
+    "domino": "^2.1.6",
     "dotenv": "^8.2.0",
+    "node-fetch": "^2.6.0",
     "nodemon": "^2.0.4",
+    "page-metadata-parser": "^1.1.4",
     "sequelize": "^6.3.4",
     "sqlite3": "^5.0.0",
-    "winston": "^3.3.3"
+    "winston": "^3.3.3",
+    "wpapi": "^1.2.1"
   }
 }
