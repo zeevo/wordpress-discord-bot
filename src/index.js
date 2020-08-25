@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const Discord = require('discord.js');
+const { Op } = require('sequelize');
 const logger = require('./logger');
 const wp = require('./wp');
 const db = require('./db');
@@ -42,13 +43,15 @@ client.login(process.env.TOKEN).then(async () => {
           const { author } = ct;
           const post = await Post.findAll({
             where: {
-              $or: [
+              [Op.or]: [
                 {
                   discordId: {
-                    $eq: ct.id,
+                    [Op.eq]: ct.id,
                   },
+                },
+                {
                   url: {
-                    $eq: ct.content,
+                    [Op.eq]: ct.content,
                   },
                 },
               ],
