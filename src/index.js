@@ -72,7 +72,7 @@ client.login(process.env.TOKEN).then(async () => {
           }
         });
       });
-  }, 10000);
+  }, 30000);
 
   setInterval(async () => {
     // Send the data from the database to Wordpress
@@ -93,5 +93,5 @@ client.login(process.env.TOKEN).then(async () => {
       });
       return post.save();
     }, Promise.resolve());
-  }, 10000);
+  }, 30000);
 });
