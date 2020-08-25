@@ -16,10 +16,6 @@ class ProcessPostsJob extends Job {
     this.wp = wp;
   }
 
-  start() {
-    this.job = setInterval(this.run.bind(this), this.interval);
-  }
-
   async run() {
     this.logger.info('Job: Processing posts...');
     // Send the data from the database to Wordpress
@@ -39,10 +35,15 @@ class ProcessPostsJob extends Job {
       this.logger.info(`Processing post ${post.discordId}`);
       try {
         const { meta, og } = await lookupMetaInfo(post.url);
+        const categories = await this.wp.getAllCategories();
+        const category = categories.find((cat) => post.channelName === cat.name);
+        console.log(category);
+        console.log(post.channelName);
         await this.wp.createPost({
           title: meta.title || og.title || post.url,
           content: meta.description || og.description || post.content,
           url: post.url,
+          categories: [category.id],
           status: 'draft',
         });
         await post.update({ processed: true });

@@ -12,18 +12,41 @@ class Wordpress {
     this.api = api;
   }
 
-  async createPost({ title, content, url, status }) {
+  async createPost({ title, content, url, status, categories }) {
     try {
       const wpPost = await this.api.posts().create({
         title,
         content,
         status,
+        categories,
       });
       return this.api.acfUrl().id(wpPost.id).create({
         fields: {
           url,
         },
       });
+    } catch (e) {
+      logger.error(e);
+      return null;
+    }
+  }
+
+  async getAllCategories() {
+    try {
+      const categories = await this.api.categories().get();
+      return categories;
+    } catch (e) {
+      logger.error(e);
+      return null;
+    }
+  }
+
+  async createCategory(name) {
+    try {
+      const res = await this.api.categories().create({
+        name,
+      });
+      return res;
     } catch (e) {
       logger.error(e);
       return null;

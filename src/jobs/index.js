@@ -1,12 +1,13 @@
 class Job {
   constructor(options) {
     this.logger = options.logger;
+    this.interval = options.interval;
   }
 
-  start() {
+  async start() {
     this.job = setInterval(async () => {
       try {
-        this.run.bind(this);
+        await this.run();
       } catch (e) {
         this.logger.error(e);
       }

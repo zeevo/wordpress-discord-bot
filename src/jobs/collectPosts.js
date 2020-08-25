@@ -16,7 +16,7 @@ class CollectPostsJob extends Job {
     this.client = client;
   }
 
-  run() {
+  async run() {
     this.logger.info('Job: Collecting posts...');
     const { Post } = this.database;
     this.client.channels.cache

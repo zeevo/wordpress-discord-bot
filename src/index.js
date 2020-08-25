@@ -7,6 +7,7 @@ const db = require('./db');
 
 const CollectPostJob = require('./jobs/collectPosts');
 const ProcessPostsJob = require('./jobs/processPosts');
+const CollectChannelsJob = require('./jobs/collectChannels');
 const { isUrl } = require('./utils');
 
 const client = new Discord.Client();
@@ -44,9 +45,19 @@ client.login(process.env.TOKEN).then(async () => {
     database,
     client,
     wp,
-    interval: 5000,
+    interval: 10000,
   });
 
+  const collectChannelsJob = new CollectChannelsJob({
+    logger,
+    database,
+    client,
+    wp,
+    interval: 120000,
+  });
+
+  await collectChannelsJob.run();
+  collectChannelsJob.start();
   collectPostJob.start();
   processPostJob.start();
 });
