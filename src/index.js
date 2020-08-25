@@ -29,7 +29,7 @@ client.on('message', async (msg) => {
 
 client.login(process.env.TOKEN).then(async () => {
   setInterval(async () => {
-    logger.info('Collection posts...');
+    logger.info('Collecting posts...');
     const { Post } = await db();
     client.channels.cache
       .filter((channel) => {
@@ -84,14 +84,27 @@ client.login(process.env.TOKEN).then(async () => {
       },
     });
 
+    if (!postsToProcess.length) {
+      logger.info('No new posts to process found...');
+    }
+
     postsToProcess.reduce(async (accum, post) => {
       await accum;
       logger.info(`Processing post ${post.discordId}`);
-      await wp.createPost(post);
-      await post.update({
-        processed: true,
-      });
-      return post.save();
+      try {
+        const { meta, og } = await lookupMetaInfo(post.url);
+        await wp.createPost({
+          title: meta.title || og.title || post.url,
+          content: meta.description || og.description || post.content,
+          url: post.url,
+          status: 'draft',
+        });
+        await post.update({ processed: true });
+        return post.save();
+      } catch (e) {
+        logger.error(e);
+        return Promise.resolve();
+      }
     }, Promise.resolve());
   }, 30000);
 });

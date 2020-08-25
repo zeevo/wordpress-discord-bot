@@ -12,20 +12,17 @@ class Wordpress {
     this.api = api;
   }
 
-  async createPost(post) {
+  async createPost({ title, content, url, status }) {
     const wpPost = await this.api.posts().create({
-      title: post.content,
-      content: post.content,
-      status: 'draft',
+      title,
+      content,
+      status,
     });
-    return this.api
-      .acfUrl()
-      .id(wpPost.id)
-      .create({
-        fields: {
-          url: post.url,
-        },
-      });
+    return this.api.acfUrl().id(wpPost.id).create({
+      fields: {
+        url,
+      },
+    });
   }
 }
 

@@ -21,6 +21,7 @@
     "discord.js": "^12.3.1",
     "domino": "^2.1.6",
     "dotenv": "^8.2.0",
+    "html-metadata-parser": "^1.0.3",
     "node-fetch": "^2.6.0",
     "nodemon": "^2.0.4",
     "page-metadata-parser": "^1.1.4",
