@@ -1,11 +1,13 @@
 require('dotenv').config();
 
 const Discord = require('discord.js');
-const { Op } = require('sequelize');
 const logger = require('./logger');
 const wp = require('./wp');
 const db = require('./db');
-const { isUrl, lookupMetaInfo, isValidMessage } = require('./utils');
+
+const CollectPostJob = require('./jobs/collectPosts');
+const ProcessPostsJob = require('./jobs/processPosts');
+const { isUrl } = require('./utils');
 
 const client = new Discord.Client();
 
@@ -28,83 +30,23 @@ client.on('message', async (msg) => {
 });
 
 client.login(process.env.TOKEN).then(async () => {
-  setInterval(async () => {
-    logger.info('Collecting posts...');
-    const { Post } = await db();
-    client.channels.cache
-      .filter((channel) => {
-        return channel.type === 'text';
-      })
-      .forEach(async (chl) => {
-        const channel = await chl.fetch();
-        const messages = await channel.messages.fetch({ limit: 50 });
-        const content = messages.filter(isValidMessage);
-        content.forEach(async (ct) => {
-          const { author } = ct;
-          const post = await Post.findAll({
-            where: {
-              [Op.or]: [
-                {
-                  discordId: {
-                    [Op.eq]: ct.id,
-                  },
-                },
-                {
-                  url: {
-                    [Op.eq]: ct.content,
-                  },
-                },
-              ],
-            },
-          });
-          if (!post.length) {
-            logger.info('Found new message');
-            await Post.create({
-              content: ct.content,
-              url: ct.content,
-              authorUserName: `${author.username}#${author.discriminator}`,
-              authorDiscordId: author.id,
-              discordId: ct.id,
-              createdTimestamp: ct.createdTimestamp,
-              channelDiscordId: channel.id,
-              channelName: channel.name,
-            });
-          }
-        });
-      });
-  }, 30000);
+  const database = await db();
 
-  setInterval(async () => {
-    // Send the data from the database to Wordpress
-    logger.info('Processing posts...');
-    const { Post } = await db();
-    const postsToProcess = await Post.findAll({
-      where: {
-        processed: false,
-      },
-    });
+  const collectPostJob = new CollectPostJob({
+    logger,
+    database,
+    client,
+    interval: 5000,
+  });
 
-    if (!postsToProcess.length) {
-      logger.info('No new posts to process found...');
-    }
+  const processPostJob = new ProcessPostsJob({
+    logger,
+    database,
+    client,
+    wp,
+    interval: 5000,
+  });
 
-    postsToProcess.reduce(async (accum, post) => {
-      await accum;
-      logger.info(`Processing post ${post.discordId}`);
-      try {
-        const { meta, og } = await lookupMetaInfo(post.url);
-        await wp.createPost({
-          title: meta.title || og.title || post.url,
-          content: meta.description || og.description || post.content,
-          url: post.url,
-          status: 'draft',
-        });
-        await post.update({ processed: true });
-        return post.save();
-      } catch (e) {
-        logger.error(e);
-        return Promise.resolve();
-      }
-    }, Promise.resolve());
-  }, 30000);
+  collectPostJob.start();
+  processPostJob.start();
 });

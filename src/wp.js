@@ -13,16 +13,21 @@ class Wordpress {
   }
 
   async createPost({ title, content, url, status }) {
-    const wpPost = await this.api.posts().create({
-      title,
-      content,
-      status,
-    });
-    return this.api.acfUrl().id(wpPost.id).create({
-      fields: {
-        url,
-      },
-    });
+    try {
+      const wpPost = await this.api.posts().create({
+        title,
+        content,
+        status,
+      });
+      return this.api.acfUrl().id(wpPost.id).create({
+        fields: {
+          url,
+        },
+      });
+    } catch (e) {
+      logger.error(e);
+      return null;
+    }
   }
 }
 

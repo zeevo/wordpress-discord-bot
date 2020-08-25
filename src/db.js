@@ -10,9 +10,10 @@ let synced = false;
 
 module.exports = async () => {
   if (!synced) {
-    Object.keys(Models).forEach(async (model) => {
-      await Models[model].sync({ force: true || process.env.DB_ACTION === 'force' });
-    });
+    Object.keys(Models).reduce(async (accum, model) => {
+      await accum;
+      return Models[model].sync({ force: process.env.DB_ACTION === 'force' });
+    }, Promise.resolve());
     synced = true;
   }
   return Models;
