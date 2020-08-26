@@ -15,10 +15,14 @@ module.exports = (sequelize) => {
     content: {
       type: Sequelize.TEXT,
     },
-    authorUserName: {
+    // Discord Meta fields
+    authorDiscordUsername: {
       type: Sequelize.STRING,
     },
     authorDiscordId: {
+      type: Sequelize.STRING,
+    },
+    authorDiscordDiscriminator: {
       type: Sequelize.STRING,
     },
     createdTimestamp: {
@@ -27,7 +31,7 @@ module.exports = (sequelize) => {
     channelDiscordId: {
       type: Sequelize.STRING,
     },
-    channelName: {
+    channelDiscordName: {
       type: Sequelize.STRING,
     },
   });

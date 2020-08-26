@@ -25,7 +25,7 @@ class CollectPostsJob extends Job {
       })
       .forEach(async (chl) => {
         const channel = await chl.fetch();
-        const messages = await channel.messages.fetch({ limit: 50 });
+        const messages = await channel.messages.fetch({ limit: 100 });
         const content = messages.filter(isValidMessage);
         content.forEach(async (ct) => {
           const { author } = ct;
@@ -50,12 +50,13 @@ class CollectPostsJob extends Job {
             await Post.create({
               content: ct.content,
               url: ct.content,
-              authorUserName: `${author.username}#${author.discriminator}`,
-              authorDiscordId: author.id,
               discordId: ct.id,
+              authorDiscordUsername: author.username,
+              authorDiscordDiscriminator: author.discriminator,
+              authorDiscordId: author.id,
               createdTimestamp: ct.createdTimestamp,
               channelDiscordId: channel.id,
-              channelName: channel.name,
+              channelDiscordName: channel.name,
             });
           }
         });

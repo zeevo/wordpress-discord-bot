@@ -36,15 +36,19 @@ class ProcessPostsJob extends Job {
       try {
         const { meta, og } = await lookupMetaInfo(post.url);
         const categories = await this.wp.getAllCategories();
-        const category = categories.find((cat) => post.channelName === cat.name);
-        console.log(category);
-        console.log(post.channelName);
+        const category = categories.find((cat) => post.channelDiscordName === cat.name);
         await this.wp.createPost({
           title: meta.title || og.title || post.url,
           content: meta.description || og.description || post.content,
-          url: post.url,
           categories: [category.id],
           status: 'draft',
+          acf: {
+            url: post.url,
+            authorusername: post.authorDiscordUsername,
+            authordescriminator: post.authorDiscordDiscriminator,
+            authorid: post.authorDiscordId,
+            createdtimestamp: post.createdTimestamp,
+          },
         });
         await post.update({ processed: true });
         return post.save();
