@@ -5,7 +5,7 @@ const logger = require('./logger');
 const wp = require('./wp');
 const db = require('./db');
 
-const CollectPostJob = require('./jobs/collectPosts');
+const CollectPostsJob = require('./jobs/collectPosts');
 const ProcessPostsJob = require('./jobs/processPosts');
 const CollectChannelsJob = require('./jobs/collectChannels');
 const { isUrl } = require('./utils');
@@ -20,8 +20,6 @@ client.on('message', async (msg) => {
   if (msg.author.bot) {
     return;
   }
-  logger.info({ message: msg.content, author: msg.author.id });
-
   const { content } = msg;
   if (isUrl(content)) {
     await msg.reply("That's a link");
@@ -33,7 +31,7 @@ client.on('message', async (msg) => {
 client.login(process.env.TOKEN).then(async () => {
   const database = await db();
 
-  const collectPostJob = new CollectPostJob({
+  const collectPostJob = new CollectPostsJob({
     logger,
     database,
     client,

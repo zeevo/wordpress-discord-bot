@@ -21,7 +21,7 @@ class CollectPostsJob extends Job {
     const { Post } = this.database;
     this.client.channels.cache
       .filter((channel) => {
-        return channel.type === 'text';
+        return channel.type === 'text' && channel.name.toLowerCase() !== 'general';
       })
       .forEach(async (chl) => {
         const channel = await chl.fetch();
