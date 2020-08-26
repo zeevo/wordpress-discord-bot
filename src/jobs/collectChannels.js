@@ -1,9 +1,8 @@
 const { Job } = require('.');
 
 class CollectChannelsJob extends Job {
-  constructor(options) {
-    super(options);
-    const { interval, database, logger, client, wp } = options;
+  constructor({ interval, database, logger, client, wp, name = 'CollectChannelsJob' }) {
+    super({ interval, database, logger, client, wp, name });
     this.interval = interval;
     this.database = database;
     this.logger = logger;
@@ -12,7 +11,7 @@ class CollectChannelsJob extends Job {
   }
 
   async run() {
-    this.logger.info('Job: Collecting Channels');
+    this.log('Collecting Channels');
     const existingCategories = await this.wp.getAllCategories();
     const existingCategoryNames = existingCategories.map((category) => category.name);
     this.client.channels.cache
@@ -22,7 +21,7 @@ class CollectChannelsJob extends Job {
       .forEach(async (chl) => {
         const { name } = chl;
         if (!existingCategoryNames.includes(name)) {
-          this.logger.info(`Found new channel ${name}`);
+          this.log(`Creating new channel ${name}`);
           await this.wp.createCategory(name);
         }
       });

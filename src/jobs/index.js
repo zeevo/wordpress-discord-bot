@@ -2,6 +2,7 @@ class Job {
   constructor(options) {
     this.logger = options.logger;
     this.interval = options.interval;
+    this.name = options.name;
   }
 
   async start() {
@@ -12,6 +13,10 @@ class Job {
         this.logger.error(e);
       }
     }, this.interval);
+  }
+
+  log(message, level = 'info') {
+    this.logger.log(level, `${this.name}: ${message}`);
   }
 
   /* eslint-disable class-methods-use-this,no-console */

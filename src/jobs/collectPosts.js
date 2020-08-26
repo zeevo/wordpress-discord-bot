@@ -7,9 +7,8 @@ const isValidMessage = (message) => {
 };
 
 class CollectPostsJob extends Job {
-  constructor(options) {
-    super(options);
-    const { interval, database, logger, client } = options;
+  constructor({ interval, database, logger, client, name = 'CollectPostsJob' }) {
+    super({ interval, database, logger, client, name });
     this.interval = interval;
     this.database = database;
     this.logger = logger;
@@ -17,7 +16,7 @@ class CollectPostsJob extends Job {
   }
 
   async run() {
-    this.logger.info('Job: Collecting posts...');
+    this.log('Collecting posts...');
     const { Post } = this.database;
     this.client.channels.cache
       .filter((channel) => {
@@ -46,7 +45,7 @@ class CollectPostsJob extends Job {
             },
           });
           if (!post.length) {
-            this.logger.info(`Found new message ${ct.content}`);
+            this.log(`Found new message ${ct.content}`);
             await Post.create({
               content: ct.content,
               url: ct.content,

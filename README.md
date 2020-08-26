@@ -5,11 +5,11 @@ This is a simple bot to post Discord messages to a Wordpress instance.
 ## Requirements
 
 Wait! This bot won't work out of the box! You will need to configure the
-following plugins on your Wordpress instance!
+following plugins on your Wordpress instance! This Bot depends on a Wordpress instance compatible with [node-wpapi](https://github.com/WP-API/node-wpapi).
 
 ### Advanced Custom Fields
 
-This bot posts information to the following Advanced Custom Fields
+This bot posts information to the following [Advanced Custom Fields](https://www.advancedcustomfields.com/)
 
 - url
 - authordescriminator
@@ -19,11 +19,11 @@ This bot posts information to the following Advanced Custom Fields
 
 ### ACF to REST API
 
-Install ACF to REST API and activate.
+Install [ACF to REST API](https://wordpress.org/plugins/acf-to-rest-api/) and activate.
 
 ### JSON Basic Authentication
 
-Install JSON Basic Authentication and activate
+Install [JSON Basic Authentication](https://github.com/WP-API/Basic-Auth) and activate
 
 ## .htaccess
 

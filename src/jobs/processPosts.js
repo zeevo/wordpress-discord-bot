@@ -6,9 +6,8 @@ const lookupMetaInfo = (url) => {
 };
 
 class ProcessPostsJob extends Job {
-  constructor(options) {
-    super(options);
-    const { interval, database, logger, client, wp } = options;
+  constructor({ interval, database, logger, client, wp, name = 'ProcessPostsJob' }) {
+    super({ interval, database, logger, client, wp, name });
     this.interval = interval;
     this.database = database;
     this.logger = logger;
@@ -17,7 +16,7 @@ class ProcessPostsJob extends Job {
   }
 
   async run() {
-    this.logger.info('Job: Processing posts...');
+    this.log('Job: Processing posts...');
     // Send the data from the database to Wordpress
     const { Post } = this.database;
     const postsToProcess = await Post.findAll({
@@ -27,12 +26,12 @@ class ProcessPostsJob extends Job {
     });
 
     if (!postsToProcess.length) {
-      this.logger.info('No new posts to process found...');
+      this.log('No new posts to process found...');
     }
 
     postsToProcess.reduce(async (accum, post) => {
       await accum;
-      this.logger.info(`Processing post ${post.discordId}`);
+      this.log(`Processing post ${post.discordId}`);
       try {
         const { meta, og } = await lookupMetaInfo(post.url);
         const categories = await this.wp.getAllCategories();
@@ -53,7 +52,7 @@ class ProcessPostsJob extends Job {
         await post.update({ processed: true });
         return post.save();
       } catch (e) {
-        this.logger.error(e);
+        this.log(e, 'error');
         return Promise.resolve();
       }
     }, Promise.resolve());
