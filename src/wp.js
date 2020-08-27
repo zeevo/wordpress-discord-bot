@@ -36,7 +36,7 @@ class Wordpress {
 
   async getAllCategories() {
     try {
-      const categories = await this.api.categories().get();
+      const categories = await this.api.categories().param('per_page', 100).get();
       return categories;
     } catch (e) {
       logger.error(e);
