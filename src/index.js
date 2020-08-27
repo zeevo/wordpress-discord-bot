@@ -35,7 +35,7 @@ client.login(process.env.TOKEN).then(async () => {
     logger,
     database,
     client,
-    interval: 30000,
+    interval: 60000,
   });
 
   const processPostJob = new ProcessPostsJob({
@@ -43,7 +43,7 @@ client.login(process.env.TOKEN).then(async () => {
     database,
     client,
     wp,
-    interval: 40000,
+    interval: 60000,
   });
 
   const collectChannelsJob = new CollectChannelsJob({

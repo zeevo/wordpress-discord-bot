@@ -25,40 +25,44 @@ class CollectPostsJob extends Job {
     /* eslint-disable */
     for (const chl of channels.array()) {
       const channel = await chl.fetch();
-      const messages = await channel.messages.fetch({ limit: 100 });
-      const content = messages.filter(isValidMessage);
-      for (const ct of content.array()) {
-        const { author } = ct;
-        const post = await Post.findAll({
-          where: {
-            [Op.or]: [
-              {
-                discordId: {
-                  [Op.eq]: ct.id,
+      try {
+        const messages = await channel.messages.fetch({ limit: 100 });
+        const content = messages.filter(isValidMessage);
+        for (const ct of content.array()) {
+          const { author } = ct;
+          const post = await Post.findAll({
+            where: {
+              [Op.or]: [
+                {
+                  discordId: {
+                    [Op.eq]: ct.id,
+                  },
                 },
-              },
-              {
-                url: {
-                  [Op.eq]: ct.content,
+                {
+                  url: {
+                    [Op.eq]: ct.content,
+                  },
                 },
-              },
-            ],
-          },
-        });
-        if (!post.length) {
-          this.log(`Found new message ${ct.content}`);
-          await Post.create({
-            content: ct.content,
-            url: ct.content,
-            discordId: ct.id,
-            authorDiscordUsername: author.username,
-            authorDiscordDiscriminator: author.discriminator,
-            authorDiscordId: author.id,
-            createdTimestamp: ct.createdTimestamp,
-            channelDiscordId: channel.id,
-            channelDiscordName: channel.name,
+              ],
+            },
           });
+          if (!post.length) {
+            this.log(`Found new message ${ct.content}`);
+            await Post.create({
+              content: ct.content,
+              url: ct.content,
+              discordId: ct.id,
+              authorDiscordUsername: author.username,
+              authorDiscordDiscriminator: author.discriminator,
+              authorDiscordId: author.id,
+              createdTimestamp: ct.createdTimestamp,
+              channelDiscordId: channel.id,
+              channelDiscordName: channel.name,
+            });
+          }
         }
+      } catch (e) {
+        this.log('Something went wrong fetching messages');
       }
     }
   }

@@ -1,27 +1,25 @@
-let running = false;
-
 class Job {
   constructor(options) {
     this.logger = options.logger;
     this.interval = options.interval;
     this.name = options.name;
+    this.running = false;
   }
 
   async start() {
     this.job = setInterval(async () => {
+      this.log('Job start.');
       try {
-        if (!running) {
-          running = true;
-          this.log('Job start.');
+        if (!this.running) {
+          this.running = true;
           await this.run();
+          this.running = false;
         } else {
           this.log('Job already running. Skipping this execution');
         }
       } catch (e) {
         this.logger.error(e);
-      } finally {
-        this.log('Job End.');
-        running = false;
+        this.running = false;
       }
     }, this.interval);
   }
