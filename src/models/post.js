@@ -4,6 +4,7 @@ module.exports = (sequelize) => {
   return sequelize.define('post', {
     discordId: {
       type: Sequelize.STRING,
+      unique: true,
     },
     processed: {
       type: Sequelize.BOOLEAN,
@@ -11,6 +12,7 @@ module.exports = (sequelize) => {
     },
     url: {
       type: Sequelize.STRING,
+      unique: true,
     },
     content: {
       type: Sequelize.TEXT,

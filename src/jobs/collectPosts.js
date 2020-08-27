@@ -22,11 +22,12 @@ class CollectPostsJob extends Job {
       return channel.type === 'text' && channel.name.toLowerCase() !== 'general';
     });
 
-    channels.forEach(async (chl) => {
+    /* eslint-disable */
+    for (const chl of channels.array()) {
       const channel = await chl.fetch();
       const messages = await channel.messages.fetch({ limit: 100 });
       const content = messages.filter(isValidMessage);
-      content.forEach(async (ct) => {
+      for (const ct of content.array()) {
         const { author } = ct;
         const post = await Post.findAll({
           where: {
@@ -58,8 +59,8 @@ class CollectPostsJob extends Job {
             channelDiscordName: channel.name,
           });
         }
-      });
-    });
+      }
+    }
   }
 }
 
