@@ -16,15 +16,18 @@ class CollectChannelsJob extends Job {
     const existingCategoryNames = existingCategories.map((category) => category.name);
     this.client.channels.cache
       .filter((channel) => {
-        return channel.type === 'text';
+        return (
+          channel.type === 'text' &&
+          channel.name.toLowerCase() !== 'general' &&
+          !existingCategoryNames.includes(channel.name)
+        );
       })
-      .forEach(async (chl) => {
+      .reduce(async (accum, chl) => {
+        await accum;
         const { name } = chl;
-        if (!existingCategoryNames.includes(name)) {
-          this.log(`Creating new channel ${name}`);
-          await this.wp.createCategory(name);
-        }
-      });
+        this.log(`Creating new channel ${name}`);
+        return this.wp.createCategory(name);
+      }, Promise.resolve());
   }
 }
 
